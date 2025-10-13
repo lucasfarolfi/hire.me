@@ -1,6 +1,6 @@
 package dto
 
-type URLShortenerCreatedDTO struct {
+type CreatedShortenedURLDTO struct {
 	Alias      string         "json:alias"
 	URL        string         "json:url"
 	Statistics *StatisticsDTO "json:statistics"
@@ -10,6 +10,11 @@ type StatisticsDTO struct {
 	TimeTaken string "json:time_taken"
 }
 
-func NewURLShortenerCreatedDTO(alias, url, timeTaken string) *URLShortenerCreatedDTO {
-	return &URLShortenerCreatedDTO{alias, url, &StatisticsDTO{timeTaken}}
+func NewCreatedShortenedURLDTO(alias, url, timeTaken string) *CreatedShortenedURLDTO {
+	return &CreatedShortenedURLDTO{alias, url, &StatisticsDTO{timeTaken}}
+}
+
+type URLShortenerCreateDTO struct {
+	URL   string "json:url"
+	Alias string "json:alias"
 }

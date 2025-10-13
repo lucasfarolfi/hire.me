@@ -1,6 +1,6 @@
 package entity
 
-type Shortener struct {
+type ShortenedURL struct {
 	Alias       string "json:alias"
 	Url         string "json:url"
 	AccessTimes int32  "json:access_times,omitempty"

@@ -1,11 +1,20 @@
-### Create Shorten URL
+### Create Shorten URL with random alias
 POST http://localhost:8080/shortener
 Content-Type: application/json
 
 {
-    "url": "teste"
+    "url": "http://www.bemobi.com.br"
 }
 
+### Create Shorten URL with custom alias
+POST http://localhost:8080/shortener
+Content-Type: application/json
+
+{
+    "url": "http://www.bemobi.com.br",
+    "alias": "test12"
+}
+    
 
 ### Retrieve URL by alias
 GET http://localhost:8080/shortener/awbsedf
