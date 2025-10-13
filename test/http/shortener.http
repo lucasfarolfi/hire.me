@@ -1,0 +1,11 @@
+### Create Shorten URL
+POST http://localhost:8080/shortener
+Content-Type: application/json
+
+{
+    "url": "teste"
+}
+
+
+### Retrieve URL by alias
+GET http://localhost:8080/shortener/awbsedf
