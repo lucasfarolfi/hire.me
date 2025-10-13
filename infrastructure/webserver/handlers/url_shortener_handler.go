@@ -31,7 +31,7 @@ func (h *URLShortenerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *URLShortenerHandler) Retrieve(w http.ResponseWriter, r *http.Request) {
+func (h *URLShortenerHandler) RetrieveByAlias(w http.ResponseWriter, r *http.Request) {
 	alias := r.PathValue("alias")
 	log.Println(alias)
 	s := &entity.ShortenedURL{Alias: "abcde", Url: "http://www.bemobi.com.br"}

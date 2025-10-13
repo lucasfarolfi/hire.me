@@ -15,7 +15,7 @@ func main() {
 	handler := handlers.NewURLShortenerHandler(db)
 
 	http.HandleFunc("POST /shortener", handler.Create)
-	http.HandleFunc("GET /shortener/{alias}", handler.Retrieve)
+	http.HandleFunc("GET /shortener/{alias}", handler.RetrieveByAlias)
 
 	log.Println("Server is running at port 8080")
 	http.ListenAndServe(":8080", nil)

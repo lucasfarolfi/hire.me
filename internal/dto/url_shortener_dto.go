@@ -18,3 +18,8 @@ type URLShortenerCreateDTO struct {
 	URL   string "json:url"
 	Alias string "json:alias"
 }
+
+type ShortenedUrlRetrieveDTO struct {
+	URL   string "json:url"
+	Alias string "json:alias"
+}

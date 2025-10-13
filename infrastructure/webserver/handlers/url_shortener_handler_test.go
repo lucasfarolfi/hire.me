@@ -102,6 +102,56 @@ func TestShortenerHandlerIntegration_Create(t *testing.T) {
 	})
 }
 
+func TestShortenerHandlerIntegration_RetrieveByAlias(t *testing.T) {
+	t.Run("Given a valid alias, when the API receives the GET request, then it should retrieve the shortened URL", func(t *testing.T) {
+		db := loadDB(t)
+		handler := NewURLShortenerHandler(db)
+
+		server := httptest.NewServer(http.HandlerFunc(handler.RetrieveByAlias))
+		defer server.Close()
+
+		alias := "abc123"
+		url := "http://www.bemobi.com.br"
+		db.Create(&entity.ShortenedURL{Alias: alias, Url: url})
+
+		resp, err := http.Get(server.URL + "/" + alias)
+		assert.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var response dto.ShortenedUrlRetrieveDTO
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		assert.NoError(t, err)
+
+		assert.Equal(t, alias, response.Alias, "The returned Alias should match the input Alias")
+		assert.Equal(t, url, response.URL, "The returned URL should match the stored URL")
+	})
+
+	t.Run("Given an non-existing alias, when the API receives the GET request, then it should return a custom error response", func(t *testing.T) {
+		db := loadDB(t)
+		handler := NewURLShortenerHandler(db)
+
+		server := httptest.NewServer(http.HandlerFunc(handler.RetrieveByAlias))
+		defer server.Close()
+
+		alias := "abc123"
+
+		resp, err := http.Get(server.URL + "/" + alias)
+		assert.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+
+		var response HttpResponseErrorBody
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		assert.NoError(t, err)
+
+		assert.Equal(t, "002", response.ErrCode, "ErrCode should be '002'")
+		assert.Equal(t, "SHORTENED URL NOT FOUND", response.Description, "Description should indicate the shortened URL was not found")
+	})
+}
+
 func loadDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open("file:memory:"), &gorm.Config{})
 	assert.NoError(t, err)
