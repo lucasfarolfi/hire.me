@@ -15,6 +15,5 @@ func NewCreatedShortenedURLDTO(alias, url, timeTaken string) *CreatedShortenedUR
 }
 
 type ShortenedUrlRetrieveDTO struct {
-	URL   string "json:url"
-	Alias string "json:alias"
+	URL string "json:url"
 }

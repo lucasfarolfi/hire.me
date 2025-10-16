@@ -42,7 +42,6 @@ func (s *URLShortenerService) Create(alias, url string) (*entity.ShortenedURL, e
 }
 
 func (s *URLShortenerService) RetrieveByAlias(alias string) (*entity.ShortenedURL, error) {
-
 	return s.Repository.FindByAlias(alias)
 }
 

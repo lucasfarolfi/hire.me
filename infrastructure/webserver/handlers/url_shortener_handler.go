@@ -2,14 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/lucasfarolfi/hire.me/internal/dto"
-	"github.com/lucasfarolfi/hire.me/internal/entity"
 	"github.com/lucasfarolfi/hire.me/internal/service"
+	"gorm.io/gorm"
 )
 
 type URLShortenerHandler struct {
@@ -54,12 +54,23 @@ func (h *URLShortenerHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *URLShortenerHandler) RetrieveByAlias(w http.ResponseWriter, r *http.Request) {
 	alias := r.PathValue("alias")
-	log.Println(alias)
-	s := &entity.ShortenedURL{Alias: "abcde", Url: "http://www.bemobi.com.br"}
+	if alias == "" {
+		http.Error(w, "alias is required", http.StatusBadRequest)
+		return
+	}
+	shortUrl, err := h.service.RetrieveByAlias(alias)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			retrieveErrorResponseBody(w, http.StatusNotFound, "002", "SHORTENED URL NOT FOUND", alias)
+			return
+		}
+		http.Error(w, "failed to create shortened URL", http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err := json.NewEncoder(w).Encode(s)
+	err = json.NewEncoder(w).Encode(&dto.ShortenedUrlRetrieveDTO{URL: shortUrl.Url})
 	if err != nil {
 		http.Error(w, "failed to encode shortener response", http.StatusInternalServerError)
 	}
