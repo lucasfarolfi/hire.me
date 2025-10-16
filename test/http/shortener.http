@@ -5,4 +5,7 @@ POST http://localhost:8080/shortener?url=http://www.bemobi.com.br
 POST http://localhost:8080/shortener?url=http://www.bemobi.com.br&alias=test12
 
 ### Retrieve URL by alias
-GET http://localhost:8080/shortener/awbsedf
+GET http://localhost:8080/shortener/test12
+
+### Retrieve URL by non-existing alias
+GET http://localhost:8080/shortener/non-existing-alias
