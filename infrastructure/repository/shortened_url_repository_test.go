@@ -84,6 +84,58 @@ func TestShortenerUrlRepositoryIntegration_FindByAlias(t *testing.T) {
 	})
 }
 
+func TestShortenedURLRepository_ExistsByAlias(t *testing.T) {
+	t.Run("Given an alias that exists in the database, when ExistsByAlias is called, then it should return true", func(t *testing.T) {
+		db := loadDB(t)
+		repository := NewShortenedURLRepository(db)
+
+		shortUrl := &entity.ShortenedURL{
+			Alias:       "abc123",
+			Url:         "http://www.bemobi.com.br",
+			AccessTimes: 0,
+		}
+		err := db.Create(shortUrl).Error
+		assert.NoError(t, err)
+
+		exists := repository.ExistsByAlias("abc123")
+		assert.True(t, exists, "ExistsByAlias should return true for an existing alias")
+	})
+
+	t.Run("Given an alias that does not exist in the database, when ExistsByAlias is called, then it should return false", func(t *testing.T) {
+		db := loadDB(t)
+		repository := NewShortenedURLRepository(db)
+
+		exists := repository.ExistsByAlias("nonexistent")
+		assert.False(t, exists, "ExistsByAlias should return false for a non-existing alias")
+	})
+}
+
+func TestShortenedURLRepository_IncrementAccessTimes(t *testing.T) {
+	t.Run("Given an alias that exists in the database, when IncrementAccessTimes is called, then it should increment the access times", func(t *testing.T) {
+		db := loadDB(t)
+		repository := NewShortenedURLRepository(db)
+
+		shortUrl := &entity.ShortenedURL{
+			Alias:       "abc123",
+			Url:         "http://www.bemobi.com.br",
+			AccessTimes: 0,
+		}
+		err := db.Create(shortUrl).Error
+		assert.NoError(t, err)
+
+		err = db.Where("alias = ?", "abc123").First(&shortUrl).Error
+		assert.NoError(t, err)
+
+		err = repository.IncrementAccessTimesByID(shortUrl.ID)
+		assert.NoError(t, err)
+
+		var updatedShortUrl entity.ShortenedURL
+		err = db.First(&updatedShortUrl, "alias = ?", "abc123").Error
+		assert.NoError(t, err)
+		assert.Equal(t, int32(1), updatedShortUrl.AccessTimes, "AccessTimes should be incremented to 1")
+	})
+}
+
 func loadDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
