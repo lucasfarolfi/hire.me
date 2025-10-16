@@ -153,7 +153,7 @@ func TestShortenerHandlerIntegration_RetrieveByAlias(t *testing.T) {
 }
 
 func loadDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("file:memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
 	err = db.AutoMigrate(&entity.ShortenedURL{})
 	assert.NoError(t, err)
