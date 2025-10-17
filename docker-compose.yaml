@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    image: shortener_url
+    container_name: shortener_url_app
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_USER=root
+      - DB_PASSWORD=yourpassword
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=shortenerdb
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: mysql:5.7
+    container_name: shortener_url_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: yourpassword
+      MYSQL_DATABASE: shortenerdb
+      MYSQL_PASSWORD: yourpassword
+    ports:
+      - 3306:3306
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
