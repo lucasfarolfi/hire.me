@@ -1,13 +1,13 @@
 package dto
 
 type CreatedShortenedURLDTO struct {
-	Alias      string         "json:alias"
-	URL        string         "json:url"
-	Statistics *StatisticsDTO "json:statistics"
+	Alias      string         `json:"alias"`
+	URL        string         `json:"url"`
+	Statistics *StatisticsDTO `json:"statistics"`
 }
 
 type StatisticsDTO struct {
-	TimeTaken string "json:time_taken"
+	TimeTaken string `json:"time_taken"`
 }
 
 func NewCreatedShortenedURLDTO(alias, url, timeTaken string) *CreatedShortenedURLDTO {
@@ -15,5 +15,5 @@ func NewCreatedShortenedURLDTO(alias, url, timeTaken string) *CreatedShortenedUR
 }
 
 type ShortenedUrlRetrieveDTO struct {
-	URL string "json:url"
+	URL string `json:"url"`
 }
