@@ -31,6 +31,16 @@ services:
     networks:
       - app-network
 
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    image: shortener_url_tests
+    container_name: shortener_url_tests
+    volumes:
+      - .:/app
+    stdin_open: true
+
 networks:
   app-network:
     driver: bridge
