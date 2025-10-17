@@ -20,6 +20,7 @@ type ShortenedURLRepository interface {
 	FindByAlias(alias string) (*entity.ShortenedURL, error)
 	ExistsByAlias(alias string) bool
 	IncrementAccessTimesByID(id int) error
+	Get10MostAcessedUrls() ([]entity.ShortenedURL, error)
 }
 
 func NewURLShortenerService(repository ShortenedURLRepository) *URLShortenerService {
@@ -86,4 +87,8 @@ func (s *URLShortenerService) ExistsByAlias(alias string) bool {
 		return true
 	}
 	return false
+}
+
+func (s *URLShortenerService) Get10MostAcessedUrls() ([]entity.ShortenedURL, error) {
+	return s.Repository.Get10MostAcessedUrls()
 }

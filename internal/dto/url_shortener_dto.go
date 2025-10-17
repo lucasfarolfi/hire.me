@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/lucasfarolfi/hire.me/internal/entity"
+
 type CreatedShortenedURLDTO struct {
 	Alias      string         `json:"alias"`
 	URL        string         `json:"url"`
@@ -21,4 +23,15 @@ type ShortenedUrlRetrieveDTO struct {
 type MostAcessedUrlDTO struct {
 	URL         string `json:"url"`
 	AccessTimes int    `json:"access_times"`
+}
+
+func NewMostAcessedUrlsDTO(shortUrls []entity.ShortenedURL) []MostAcessedUrlDTO {
+	dto := make([]MostAcessedUrlDTO, 0, len(shortUrls))
+	for _, su := range shortUrls {
+		dto = append(dto, MostAcessedUrlDTO{
+			URL:         su.Url,
+			AccessTimes: int(su.AccessTimes),
+		})
+	}
+	return dto
 }

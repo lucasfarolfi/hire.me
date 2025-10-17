@@ -20,6 +20,7 @@ func main() {
 
 	http.HandleFunc("POST /", handler.Create)
 	http.HandleFunc("GET /u/{alias}", handler.RetrieveByAlias)
+	http.HandleFunc("GET /most_acessed", handler.GetMostAcessedUrls)
 
 	log.Println("Server is running at port 8080")
 	http.ListenAndServe(":8080", nil)

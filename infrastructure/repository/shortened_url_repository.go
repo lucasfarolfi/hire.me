@@ -35,6 +35,15 @@ func (ur *ShortenedURLRepository) ExistsByAlias(alias string) bool {
 	return true
 }
 
+func (ur *ShortenedURLRepository) Get10MostAcessedUrls() ([]entity.ShortenedURL, error) {
+	var shortUrls []entity.ShortenedURL
+	err := ur.DB.Order("access_times DESC").Limit(10).Find(&shortUrls).Error
+	if err != nil {
+		return nil, err
+	}
+	return shortUrls, nil
+}
+
 func (ur *ShortenedURLRepository) IncrementAccessTimesByID(id int) error {
 	return ur.DB.Model(&entity.ShortenedURL{}).Where("id = ?", id).
 		UpdateColumn("access_times", gorm.Expr("access_times + ?", 1)).Error

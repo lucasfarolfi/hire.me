@@ -220,7 +220,7 @@ func TestShortenerHandlerIntegration_GetMostAcessedUrls(t *testing.T) {
 		alias3 := "123abc"
 		service.Create(alias3, "http://www.example.com")
 		for i := 0; i < 2; i++ {
-			_, err := service.RetrieveByAlias(alias2)
+			_, err := service.RetrieveByAlias(alias3)
 			assert.NoError(t, err)
 		}
 
@@ -232,7 +232,7 @@ func TestShortenerHandlerIntegration_GetMostAcessedUrls(t *testing.T) {
 		}
 
 		mux := http.NewServeMux()
-		mux.HandleFunc("GET /most_acessed", handler.RetrieveByAlias)
+		mux.HandleFunc("GET /most_acessed", handler.GetMostAcessedUrls)
 		server := httptest.NewServer(mux)
 		defer server.Close()
 
@@ -244,7 +244,7 @@ func TestShortenerHandlerIntegration_GetMostAcessedUrls(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		var resBody []dto.MostAcessedUrlDTO
-		err = json.NewDecoder(resp.Body).Decode(resBody)
+		err = json.NewDecoder(resp.Body).Decode(&resBody)
 		assert.NoError(t, err)
 
 		assert.Len(t, resBody, 3, "There should be 3 most accessed URLs")

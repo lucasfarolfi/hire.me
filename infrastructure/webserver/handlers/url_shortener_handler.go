@@ -85,3 +85,18 @@ func (h *URLShortenerHandler) RetrieveByAlias(w http.ResponseWriter, r *http.Req
 		http.Error(w, "failed to encode shortener response", http.StatusInternalServerError)
 	}
 }
+
+func (h *URLShortenerHandler) GetMostAcessedUrls(w http.ResponseWriter, r *http.Request) {
+	urls, err := h.service.Get10MostAcessedUrls()
+	if err != nil {
+		http.Error(w, "failed to create shortened URL", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(dto.NewMostAcessedUrlsDTO(urls))
+	if err != nil {
+		http.Error(w, "failed to encode shortener response", http.StatusInternalServerError)
+	}
+}
