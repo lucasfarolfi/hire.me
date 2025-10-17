@@ -1,11 +1,11 @@
 ### Create Shorten URL with random alias
-POST http://localhost:8080/shortener?url=http://www.bemobi.com.br
+POST http://localhost:8080/?url=http://www.bemobi.com.br
 
 ### Create Shorten URL with custom alias
-POST http://localhost:8080/shortener?url=http://www.bemobi.com.br&alias=test12
+POST http://localhost:8080/?url=http://www.bemobi.com.br&alias=test12
 
 ### Retrieve URL by alias
-GET http://localhost:8080/shortener/test12
+GET http://localhost:8080/u/test12
 
 ### Retrieve URL by non-existing alias
-GET http://localhost:8080/shortener/non-existing-alias
+GET http://localhost:8080/u/non-existing-alias

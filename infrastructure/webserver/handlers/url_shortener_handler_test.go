@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -41,7 +42,7 @@ func TestShortenerHandlerIntegration_Create(t *testing.T) {
 
 		assert.Regexp(t, "^[a-zA-Z0-9]{6}$", response.Alias, "Alias should be a 6-character alphanumeric string")
 		assert.Regexp(t, `^[0-9]*\.[0-9]+ms$`, response.Statistics.TimeTaken, "TimeTaken should be a positive duration in milliseconds")
-		assert.Equal(t, params.Get("url"), response.URL, "The returned URL should match the input URL")
+		assert.Equal(t, fmt.Sprintf("%s/u/%s", server.URL, response.Alias), response.URL, "The returned URL should match the input URL")
 	})
 
 	t.Run("Given a valid URL and an new optional custom alias, hen the API receives the request, then it should create a shortened URL using the custom alias", func(t *testing.T) {
@@ -68,7 +69,7 @@ func TestShortenerHandlerIntegration_Create(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, params.Get("alias"), response.Alias, "The returned Alias should match the input Alias")
-		assert.Equal(t, params.Get("url"), response.URL, "The returned URL should match the input URL")
+		assert.Equal(t, fmt.Sprintf("%s/u/%s", server.URL, params.Get("alias")), response.URL, "The returned URL should match the input URL")
 		assert.Regexp(t, `^[0-9]*\.[0-9]+ms$`, response.Statistics.TimeTaken, "TimeTaken should be a positive duration in milliseconds")
 	})
 
@@ -110,7 +111,7 @@ func TestShortenerHandlerIntegration_RetrieveByAlias(t *testing.T) {
 		handler := NewURLShortenerHandler(service)
 
 		mux := http.NewServeMux()
-		mux.HandleFunc("GET /shortener/{alias}", handler.RetrieveByAlias)
+		mux.HandleFunc("GET /u/{alias}", handler.RetrieveByAlias)
 		server := httptest.NewServer(mux)
 		defer server.Close()
 
@@ -118,7 +119,7 @@ func TestShortenerHandlerIntegration_RetrieveByAlias(t *testing.T) {
 		url := "http://www.bemobi.com.br"
 		db.Create(&entity.ShortenedURL{Alias: alias, Url: url})
 
-		resp, err := http.Get(server.URL + "/shortener/" + alias)
+		resp, err := http.Get(server.URL + "/u/" + alias)
 		assert.NoError(t, err)
 		defer resp.Body.Close()
 
@@ -137,13 +138,13 @@ func TestShortenerHandlerIntegration_RetrieveByAlias(t *testing.T) {
 		handler := NewURLShortenerHandler(service)
 
 		mux := http.NewServeMux()
-		mux.HandleFunc("GET /shortener/{alias}", handler.RetrieveByAlias)
+		mux.HandleFunc("GET /u/{alias}", handler.RetrieveByAlias)
 		server := httptest.NewServer(mux)
 		defer server.Close()
 
 		alias := "non-existing"
 
-		resp, err := http.Get(server.URL + "/shortener/" + alias)
+		resp, err := http.Get(server.URL + "/u/" + alias)
 		assert.NoError(t, err)
 		defer resp.Body.Close()
 
@@ -155,6 +156,51 @@ func TestShortenerHandlerIntegration_RetrieveByAlias(t *testing.T) {
 
 		assert.Equal(t, "002", response.ErrCode, "ErrCode should be '002'")
 		assert.Equal(t, "SHORTENED URL NOT FOUND", response.Description, "Description should indicate the shortened URL was not found")
+	})
+}
+
+func TestShortenerHandlerIntegration_CreatexRetrieve(t *testing.T) {
+	t.Run("Given a valid alias and a url, when create is called followed by retrieve endpoint, then it should receive the shorten URL and redirect to the full URL", func(t *testing.T) {
+		db := loadDB(t)
+		service := service.NewURLShortenerService(repository.NewShortenedURLRepository(db))
+		handler := NewURLShortenerHandler(service)
+
+		mux := http.NewServeMux()
+		mux.HandleFunc("POST /", handler.Create)
+		mux.HandleFunc("GET /u/{alias}", handler.RetrieveByAlias)
+		server := httptest.NewServer(mux)
+		defer server.Close()
+
+		alias := "abc123"
+		urlToShort := "http://www.bemobi.com.br"
+
+		params := url.Values{}
+		params.Add("url", urlToShort)
+		params.Add("alias", alias)
+		fullUrl := server.URL + "?" + params.Encode()
+
+		resp, err := http.Post(fullUrl, "application/json", nil)
+		assert.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusCreated, resp.StatusCode)
+
+		var createResBody dto.CreatedShortenedURLDTO
+		err = json.NewDecoder(resp.Body).Decode(&createResBody)
+		assert.NoError(t, err)
+
+		// Now get the full URL using the shorten url retrieved by create
+		resp, err = http.Get(createResBody.URL)
+		assert.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var retrieveResBody dto.ShortenedUrlRetrieveDTO
+		err = json.NewDecoder(resp.Body).Decode(&retrieveResBody)
+		assert.NoError(t, err)
+
+		assert.Equal(t, urlToShort, retrieveResBody.URL, "The returned URL should match the stored URL")
 	})
 }
 

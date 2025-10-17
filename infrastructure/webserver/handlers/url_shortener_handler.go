@@ -42,14 +42,24 @@ func (h *URLShortenerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to create shortened URL", http.StatusInternalServerError)
 		return
 	}
+	shortenURL := fmt.Sprintf("%s/u/%s", h.getHost(r), created.Alias)
 	durationStr := fmt.Sprintf("%.3fms", float64(time.Since(startTime).Nanoseconds())/1e6)
-	res := dto.NewCreatedShortenedURLDTO(created.Alias, created.Url, durationStr)
+	res := dto.NewCreatedShortenedURLDTO(created.Alias, shortenURL, durationStr)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	if err = json.NewEncoder(w).Encode(res); err != nil {
 		http.Error(w, "failed to encode shortener response", http.StatusInternalServerError)
 	}
+}
+
+func (h *URLShortenerHandler) getHost(r *http.Request) string {
+	protocol := "http"
+	if r.TLS != nil {
+		protocol = "https"
+	}
+	host := r.Host
+	return fmt.Sprintf("%s://%s", protocol, host)
 }
 
 func (h *URLShortenerHandler) RetrieveByAlias(w http.ResponseWriter, r *http.Request) {
