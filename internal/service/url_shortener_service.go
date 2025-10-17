@@ -70,6 +70,14 @@ func (s *URLShortenerService) Create(alias, url string) (*entity.ShortenedURL, e
 }
 
 func (s *URLShortenerService) RetrieveByAlias(alias string) (*entity.ShortenedURL, error) {
+	shortUrl, err := s.Repository.FindByAlias(alias)
+	if err != nil {
+		return nil, err
+	}
+	err = s.Repository.IncrementAccessTimesByID(shortUrl.ID)
+	if err != nil {
+		return nil, err
+	}
 	return s.Repository.FindByAlias(alias)
 }
 
