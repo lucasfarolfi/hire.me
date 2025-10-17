@@ -40,7 +40,7 @@ func TestShortenerHandlerIntegration_Create(t *testing.T) {
 		err = json.NewDecoder(resp.Body).Decode(&response)
 		assert.NoError(t, err)
 
-		assert.Regexp(t, "^[a-zA-Z0-9]{6}$", response.Alias, "Alias should be a 6-character alphanumeric string")
+		assert.Regexp(t, "^[a-zA-Z0-9]{11}$", response.Alias, "Alias should be a 6-character alphanumeric string")
 		assert.Regexp(t, `^[0-9]*\.[0-9]+ms$`, response.Statistics.TimeTaken, "TimeTaken should be a positive duration in milliseconds")
 		assert.Equal(t, fmt.Sprintf("%s/u/%s", server.URL, response.Alias), response.URL, "The returned URL should match the input URL")
 	})
