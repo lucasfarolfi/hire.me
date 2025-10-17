@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/lucasfarolfi/hire.me/internal/entity"
@@ -141,11 +142,10 @@ func TestShortenedURLRepository_Get10MostAcessedUrls(t *testing.T) {
 		db := loadDB(t)
 		repository := NewShortenedURLRepository(db)
 
-		// Create 15 shortened URLs with varying access times
 		for i := 1; i <= 15; i++ {
 			shortUrl := &entity.ShortenedURL{
-				Alias:       "alias" + string(i),
-				Url:         "http://www.example" + string(i) + ".com",
+				Alias:       fmt.Sprintf("alias%d", i),
+				Url:         fmt.Sprintf("http://www.example%d.com", i),
 				AccessTimes: int32(i * 10), // Access times: 10, 20, ..., 150
 			}
 			err := db.Create(shortUrl).Error
