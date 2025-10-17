@@ -17,3 +17,8 @@ func NewCreatedShortenedURLDTO(alias, url, timeTaken string) *CreatedShortenedUR
 type ShortenedUrlRetrieveDTO struct {
 	URL string `json:"url"`
 }
+
+type MostAcessedUrlDTO struct {
+	URL         string `json:"url"`
+	AccessTimes int    `json:"access_times"`
+}

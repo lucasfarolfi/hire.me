@@ -204,6 +204,59 @@ func TestShortenerHandlerIntegration_CreatexRetrieve(t *testing.T) {
 	})
 }
 
+func TestShortenerHandlerIntegration_GetMostAcessedUrls(t *testing.T) {
+	t.Run("When GetMostAcessedUrls is called, then it should retrieve the 10 most accessed URLs ordering by access times DESC", func(t *testing.T) {
+		db := loadDB(t)
+		service := service.NewURLShortenerService(repository.NewShortenedURLRepository(db))
+		handler := NewURLShortenerHandler(service)
+
+		alias2 := "ABcdeF"
+		service.Create(alias2, "http://www.bemobi.com.br")
+		for i := 0; i < 3; i++ {
+			_, err := service.RetrieveByAlias(alias2)
+			assert.NoError(t, err)
+		}
+
+		alias3 := "123abc"
+		service.Create(alias3, "http://www.example.com")
+		for i := 0; i < 2; i++ {
+			_, err := service.RetrieveByAlias(alias2)
+			assert.NoError(t, err)
+		}
+
+		alias1 := "XYhakR"
+		service.Create(alias1, "http://www.abcde.com.br")
+		for i := 0; i < 5; i++ {
+			_, err := service.RetrieveByAlias(alias1)
+			assert.NoError(t, err)
+		}
+
+		mux := http.NewServeMux()
+		mux.HandleFunc("GET /most_acessed", handler.RetrieveByAlias)
+		server := httptest.NewServer(mux)
+		defer server.Close()
+
+		fullUrl := server.URL + "/most_acessed"
+		resp, err := http.Get(fullUrl)
+		assert.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var resBody []dto.MostAcessedUrlDTO
+		err = json.NewDecoder(resp.Body).Decode(resBody)
+		assert.NoError(t, err)
+
+		assert.Len(t, resBody, 3, "There should be 3 most accessed URLs")
+		assert.Equal(t, "http://www.abcde.com.br", resBody[0].URL, "The most accessed URL should be first")
+		assert.Equal(t, 5, resBody[0].AccessTimes, "The access times for the most accessed URL should be 5")
+		assert.Equal(t, "http://www.bemobi.com.br", resBody[1].URL, "The second most accessed URL should be second")
+		assert.Equal(t, 3, resBody[1].AccessTimes, "The access times for the second most accessed URL should be 3")
+		assert.Equal(t, "http://www.example.com", resBody[2].URL, "The third most accessed URL should be third")
+		assert.Equal(t, 2, resBody[2].AccessTimes, "The access times for the third most accessed URL should be 2")
+	})
+}
+
 func loadDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
