@@ -1,7 +1,10 @@
 package service
 
 import (
+	"crypto/rand"
+	"encoding/binary"
 	"fmt"
+	"time"
 
 	"github.com/lucasfarolfi/hire.me/internal/entity"
 )
@@ -25,11 +28,36 @@ func NewURLShortenerService(repository ShortenedURLRepository) *URLShortenerServ
 
 func (s *URLShortenerService) GenerateRandomAlias() string {
 	for {
-		alias := "abcdef"
-		if !s.Repository.ExistsByAlias("abcdef") {
+		timestamp := uint64(time.Now().UnixMilli())
+		randomPart := uint64(randomUint32())
+		combined := (timestamp << 20) | randomPart
+		alias := encodeBase62(combined)
+		if !s.Repository.ExistsByAlias(alias) {
 			return alias
 		}
 	}
+}
+
+func randomUint32() uint32 {
+	var b [4]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		panic(err)
+	}
+	return binary.BigEndian.Uint32(b[:])
+}
+
+func encodeBase62(num uint64) string {
+	if num == 0 {
+		return "0"
+	}
+
+	result := ""
+	for num > 0 {
+		remainder := num % 62
+		result += string("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[remainder])
+		num /= 62
+	}
+	return result
 }
 
 func (s *URLShortenerService) Create(alias, url string) (*entity.ShortenedURL, error) {
