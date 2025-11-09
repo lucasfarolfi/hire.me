@@ -78,12 +78,7 @@ func (h *URLShortenerHandler) RetrieveByAlias(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(&dto.ShortenedUrlRetrieveDTO{URL: shortUrl.Url})
-	if err != nil {
-		http.Error(w, "failed to encode shortener response", http.StatusInternalServerError)
-	}
+	http.Redirect(w, r, shortUrl.Url, http.StatusFound)
 }
 
 func (h *URLShortenerHandler) GetMostAcessedUrls(w http.ResponseWriter, r *http.Request) {

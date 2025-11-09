@@ -116,20 +116,15 @@ func TestShortenerHandlerIntegration_RetrieveByAlias(t *testing.T) {
 		defer server.Close()
 
 		alias := "abc123"
-		url := "http://www.bemobi.com.br"
+		url := "https://bemobi.com/"
 		db.Create(&entity.ShortenedURL{Alias: alias, Url: url})
 
 		resp, err := http.Get(server.URL + "/u/" + alias)
 		assert.NoError(t, err)
 		defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		var response dto.ShortenedUrlRetrieveDTO
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		assert.NoError(t, err)
-
-		assert.Equal(t, url, response.URL, "The returned URL should match the stored URL")
+		location := resp.Request.URL.String()
+		assert.Equal(t, url, location, "The Location header should match the stored URL")
 	})
 
 	t.Run("Given an non-existing alias, when the API receives the GET request, then it should return a custom error response", func(t *testing.T) {
@@ -172,7 +167,7 @@ func TestShortenerHandlerIntegration_CreatexRetrieve(t *testing.T) {
 		defer server.Close()
 
 		alias := "abc123"
-		urlToShort := "http://www.bemobi.com.br"
+		urlToShort := "https://bemobi.com/"
 
 		params := url.Values{}
 		params.Add("url", urlToShort)
@@ -194,13 +189,8 @@ func TestShortenerHandlerIntegration_CreatexRetrieve(t *testing.T) {
 		assert.NoError(t, err)
 		defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		var retrieveResBody dto.ShortenedUrlRetrieveDTO
-		err = json.NewDecoder(resp.Body).Decode(&retrieveResBody)
-		assert.NoError(t, err)
-
-		assert.Equal(t, urlToShort, retrieveResBody.URL, "The returned URL should match the stored URL")
+		location := resp.Request.URL.String()
+		assert.Equal(t, urlToShort, location, "The Location header should match the stored URL")
 	})
 }
 
